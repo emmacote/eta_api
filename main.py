@@ -38,21 +38,34 @@ class Task(db.Model):
 
 @app.route("/deletetask/<int:taskid>", methods=["DELETE"])
 def delete_task(taskid):
-
+    """
+    Delete a task
+    :param taskid: The ID of a task to be deleted from the data store
+    :return: nothing.
+    """
     # retrieve task object to be deleted.
     select_query = db.select(Task).filter_by(id=taskid)
     print(select_query)
     results = db.session.execute(select_query)
+
+    # Delete the task (assuming it was found in the data store to begin with
     row = results.first()
     if row:
         ob = list(row)[0]
         db.session.delete(ob)
         db.session.commit()
+
+    db.session.close()
     return "/deletetask endpoint code ran"
 
 
 @app.route("/addtask", methods=["POST"])
 def add_task():
+    """
+    Add a new task to the data store.
+    :param task_json: A new task as represented by a passed in json structure.
+    :return: nothing
+    """
     json_data = request.get_json()
 
     new_task = Task()
@@ -60,27 +73,26 @@ def add_task():
     new_task.completion_status = json_data["completion_status"]
     db.session.add(new_task)
     db.session.commit()
+    db.session.close()
 
     return "/addtask endpoint code ran"
 
 @app.route("/tasks", methods=["GET"])
 def get_tasks():
     """
-    TODO: There needs to be a creation of a task list based on a query of the
-    sqlalchemy model.... once I figure out how to make sense of new sqlalchemy. (shrugs)
-    :return:
+    Get a list of tasks from the data store
+    :return: A list of tasks in json format.
     """
+    task_list = []
+
+    # run the query
     query = db.select(Task)
     tasks = db.session.execute(query).scalars()
-    # task_list=[
-    #     dict(description="Dishes", status="Not yet done"),
-    #     dict(description="Laundry", status="Not yet done"),
-    # ]
-
     task_list = [dict(description=task.name, status=task.completion_status)
                  for task in tasks]
+    db.session.close()
 
-
+    # return the list of tasks as json data
     res_data = jsonify(dict(tasks=task_list))
     res = make_response(res_data)
     res.headers.add("Access-Control-Allow-Origin", "*")
