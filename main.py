@@ -88,7 +88,7 @@ def get_tasks():
     # run the query
     query = db.select(Task)
     tasks = db.session.execute(query).scalars()
-    task_list = [dict(description=task.name, status=task.completion_status)
+    task_list = [dict(id=task.id, description=task.name, status=task.completion_status)
                  for task in tasks]
     db.session.close()
 
