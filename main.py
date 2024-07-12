@@ -36,14 +36,15 @@ class Task(db.Model):
 
 
 
-@app.route("/deletetask/<int:taskid>", methods=["DELETE"])
-def delete_task(taskid):
+@app.route("/deletetask", methods=["DELETE"])
+def delete_task():
     """
     Delete a task
     :param taskid: The ID of a task to be deleted from the data store
     :return: nothing.
     """
     # retrieve task object to be deleted.
+    taskid = request.get_json().get("taskid")
     select_query = db.select(Task).filter_by(id=taskid)
     print(select_query)
     results = db.session.execute(select_query)
@@ -56,7 +57,10 @@ def delete_task(taskid):
         db.session.commit()
 
     db.session.close()
-    return "/deletetask endpoint code ran"
+    res = make_response("endpoint data delete task code ran")
+    res.headers.add("Access-Control-Allow-Origin", "*")
+    res.headers.add("Access-Control-Allow-Methods", "DELETE")
+    return res
 
 
 @app.route("/addtask", methods=["POST"])
