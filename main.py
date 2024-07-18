@@ -35,16 +35,26 @@ class Task(db.Model):
     completion_status: Mapped[str] = mapped_column(String(50), nullable=False)
 
 
-
-@app.route("/deletetask", methods=["DELETE"])
-def delete_task():
+@app.route("/deletetask/<taskid>", methods=["DELETE", "OPTIONS"])
+def delete_task(taskid):
     """
     Delete a task
     :param taskid: The ID of a task to be deleted from the data store
     :return: nothing.
     """
+
+
+    # This is a delete method so preflight authorization needs to be done to satisfy
+    # CORS rules.
+    if request.method == "OPTIONS":
+        res = make_response("delete allowed")
+        res.headers["Access-Control-Allow-Origin"] = "*"
+        res.headers["Access-Control-Allow-Methods"] = "DELETE, OPTIONS"
+        res.headers["Access-Control-Allow-Headers"] = "Content-type, Authorization"
+        return res
+
+
     # retrieve task object to be deleted.
-    taskid = request.get_json().get("taskid")
     select_query = db.select(Task).filter_by(id=taskid)
     print(select_query)
     results = db.session.execute(select_query)
@@ -57,9 +67,9 @@ def delete_task():
         db.session.commit()
 
     db.session.close()
-    res = make_response("endpoint data delete task code ran")
+    res_data = jsonify(dict(status="successful_deletion"))
+    res = make_response(res_data)
     res.headers.add("Access-Control-Allow-Origin", "*")
-    res.headers.add("Access-Control-Allow-Methods", "DELETE")
     return res
 
 
