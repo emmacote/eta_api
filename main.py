@@ -35,8 +35,8 @@ class Task(db.Model):
     completion_status: Mapped[str] = mapped_column(String(50), nullable=False)
 
 
-@app.route("/deletetask/<taskid>", methods=["DELETE", "OPTIONS"])
-def delete_task(taskid):
+@app.route("/deletetask/", methods=["DELETE", "OPTIONS"])
+def delete_task():
     """
     Delete a task
     :param taskid: The ID of a task to be deleted from the data store
@@ -55,6 +55,7 @@ def delete_task(taskid):
 
 
     # retrieve task object to be deleted.
+    taskid = request.json.get("taskid")
     select_query = db.select(Task).filter_by(id=taskid)
     print(select_query)
     results = db.session.execute(select_query)
