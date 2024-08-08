@@ -74,15 +74,22 @@ def delete_task():
     return res
 
 
-@app.route("/addtask", methods=["POST"])
+@app.route("/addtask", methods=["POST", "OPTIONS"])
 def add_task():
     """
     Add a new task to the data store.
     :param task_json: A new task as represented by a passed in json structure.
     :return: nothing
     """
-    json_data = request.get_json()
 
+    if request.method == "OPTIONS":
+        res = make_response("delete allowed")
+        res.headers["Access-Control-Allow-Origin"] = "*"
+        res.headers["Access-Control-Allow-Methods"] = "DELETE, OPTIONS"
+        res.headers["Access-Control-Allow-Headers"] = "Content-type, Authorization"
+        return res
+
+    json_data = request.get_json()
     new_task = Task()
     new_task.name = json_data["task_name"]
     new_task.completion_status = json_data["completion_status"]
@@ -90,7 +97,9 @@ def add_task():
     db.session.commit()
     db.session.close()
 
-    return "/addtask endpoint code ran"
+    res = make_response(jsonify(dict(status="successfully added task")))
+    res.headers.add("Access-Control-Allow-Origin", "*")
+    return res
 
 @app.route("/tasks", methods=["GET"])
 def get_tasks():
