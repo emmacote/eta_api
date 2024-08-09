@@ -5,8 +5,8 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped, mapped_column
 
 from configparser import ConfigParser
-from pdb import set_trace
 
+# SQL Alchemy database connection setup to MySQL
 config_file_path = "config.ini"
 cp = ConfigParser()
 cp.read(config_file_path)
@@ -29,6 +29,9 @@ db.init_app(app)
 
 
 class Task(db.Model):
+    """
+    SQL Alchemy data model for a task to be done.
+    """
     __tablename__ = "tasks"
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(50), nullable=False)
@@ -43,9 +46,7 @@ def delete_task():
     :return: nothing.
     """
 
-
-    # This is a delete method so preflight authorization needs to be done to satisfy
-    # CORS rules.
+    # CORS logic
     if request.method == "OPTIONS":
         res = make_response("delete allowed")
         res.headers["Access-Control-Allow-Origin"] = "*"
@@ -68,6 +69,7 @@ def delete_task():
         db.session.commit()
 
     db.session.close()
+
     res_data = jsonify(dict(status="successful_deletion"))
     res = make_response(res_data)
     res.headers.add("Access-Control-Allow-Origin", "*")
@@ -82,6 +84,7 @@ def add_task():
     :return: nothing
     """
 
+    # CORS LOGIC
     if request.method == "OPTIONS":
         res = make_response("delete allowed")
         res.headers["Access-Control-Allow-Origin"] = "*"
@@ -93,6 +96,7 @@ def add_task():
     new_task = Task()
     new_task.name = json_data["task_name"]
     new_task.completion_status = json_data["completion_status"]
+
     db.session.add(new_task)
     db.session.commit()
     db.session.close()
@@ -123,6 +127,7 @@ def get_tasks():
     return res
 
 if __name__ == '__main__':
+    # start up flask
     DEBUG_MODE = True
     PORT = 5001
     print(db)
