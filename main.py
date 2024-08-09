@@ -9,6 +9,8 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import String
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.types import DateTime
+from datetime import datetime
 
 from configparser import ConfigParser
 
@@ -40,6 +42,7 @@ class Task(db.Model):
     """
     __tablename__ = "tasks"
     id: Mapped[int] = mapped_column(primary_key=True)
+    last_update: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     completion_status: Mapped[str] = mapped_column(String(50), nullable=False)
 
@@ -100,6 +103,7 @@ def add_task():
 
     json_data = request.get_json()
     new_task = Task()
+    new_task.last_update = datetime.now()
     new_task.name = json_data["task_name"]
     new_task.completion_status = json_data["completion_status"]
 
@@ -122,7 +126,7 @@ def get_tasks():
     # run the query
     query = db.select(Task)
     tasks = db.session.execute(query).scalars()
-    task_list = [dict(id=task.id, description=task.name, status=task.completion_status)
+    task_list = [dict(id=task.id, last_update=task.last_update, description=task.name, status=task.completion_status)
                  for task in tasks]
     db.session.close()
 
