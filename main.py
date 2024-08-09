@@ -1,3 +1,9 @@
+"""
+main.py
+by Emma Cote
+
+Purpose: Set up of the flask based web api to be used by the api_client project.
+"""
 from flask import Flask, jsonify, Response, make_response, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import String
